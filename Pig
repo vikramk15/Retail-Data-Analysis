@@ -8,7 +8,7 @@ transactions = LOAD 'TransactionsData/part-m-00000' USING PigStorage(',')
 now we can see data 
 dump transactions;
 
-Top 10 customers
+        Top 10 customers
 custGroup = GROUP transactions BY id; 
 custSpendings = FOREACH custGroup GENERATE group, SUM(transactions.purchaseamount) as spendings;
 custSpendingsSort = ORDER custSpendings BY spendings desc;
@@ -16,7 +16,7 @@ top10Cust = LIMIT custSpendingsSort 10;
 DUMP top10Cust;
 STORE top10Cust INTO ‘top10Cust’; 
 
-Chain wise sales
+         Chain wise sales
 chainGroup = GROUP transactions BY chain;
 chainSales = FOREACH chainGroup GENERATE group, 
   SUM(transactions.purchasequantity) as totalQuantity, SUM(transactions.purchaseamount) as totalSales;
@@ -24,7 +24,7 @@ chainSales = FOREACH chainGroup GENERATE group,
 dump chainSales;
 STORE chainSales INTO 'chainSales‘;
 
-Each chain, top 10 customers
+        Each chain, top 10 customers
 chainGroupCust = GROUP transactions BY (chain,id);
 chainGroupCustSpedings1 = FOREACH chainGroupCust GENERATE group, SUM(transactions.purchaseamount) as spendings;
 chainGroupCustSpendings2= FOREACH chainGroupCustSpedings1 generate group.chain as chain,group.id as id, spendings;
@@ -36,7 +36,7 @@ GENERATE top10Cust;
 chainTop10Cust = FOREACH chainTop10Cust GENERATE FLATTEN(top10Cust);
 STORE chainTop10Cust INTO ‘chainTop10Cust ’;
 
-Top 10 brands
+        Top 10 brands
 brandGroup = GROUP transactions BY brand;
 brandPurchase = FOREACH brandGroup GENERATE group, SUM(transactions.purchaseamount) as purchase; 
 brandPurchaseSort = ORDER brandPurchase BY purchase desc;
