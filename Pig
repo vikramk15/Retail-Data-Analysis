@@ -1,0 +1,44 @@
+With the help of Pig Tool we analysis data direct using Pig Latin script
+
+transactions = LOAD 'TransactionsData/part-m-00000' USING PigStorage(',')
+ as (id:chararray,chain:chararray,dept:chararray,category:chararray,
+   company:chararray,brand:chararray,date:chararray, productsize:float,
+       productmeasure:chararray, purchasequantity:int, purchaseamount:float);
+
+now we can see data 
+dump transactions;
+
+Top 10 customers
+custGroup = GROUP transactions BY id; 
+custSpendings = FOREACH custGroup GENERATE group, SUM(transactions.purchaseamount) as spendings;
+custSpendingsSort = ORDER custSpendings BY spendings desc;
+top10Cust = LIMIT custSpendingsSort 10;
+DUMP top10Cust;
+STORE top10Cust INTO ‘top10Cust’; 
+
+Chain wise sales
+chainGroup = GROUP transactions BY chain;
+chainSales = FOREACH chainGroup GENERATE group, 
+  SUM(transactions.purchasequantity) as totalQuantity, SUM(transactions.purchaseamount) as totalSales;
+ 
+dump chainSales;
+STORE chainSales INTO 'chainSales‘;
+
+Each chain, top 10 customers
+chainGroupCust = GROUP transactions BY (chain,id);
+chainGroupCustSpedings1 = FOREACH chainGroupCust GENERATE group, SUM(transactions.purchaseamount) as spendings;
+chainGroupCustSpendings2= FOREACH chainGroupCustSpedings1 generate group.chain as chain,group.id as id, spendings;
+chainGroupCustSpendings3= GROUP chainGroupCustSpendings2 BY chain;
+chainTop10Cust = FOREACH chainGroupCustSpendings3{chainGroupCustSpedingsSort = ORDER chainGroupCustSpendings2 BY spendings DESC;
+top10Cust = LIMIT chainGroupCustSpedingsSort  10;			
+GENERATE top10Cust;			
+}
+chainTop10Cust = FOREACH chainTop10Cust GENERATE FLATTEN(top10Cust);
+STORE chainTop10Cust INTO ‘chainTop10Cust ’;
+
+Top 10 brands
+brandGroup = GROUP transactions BY brand;
+brandPurchase = FOREACH brandGroup GENERATE group, SUM(transactions.purchaseamount) as purchase; 
+brandPurchaseSort = ORDER brandPurchase BY purchase desc;
+top10Brands = LIMIT brandPurchaseSort 10;
+STORE top10Brands INTO 'top10Brands';
