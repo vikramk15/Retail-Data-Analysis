@@ -1,0 +1,56 @@
+Sqoop Data From MYSQL to HIVE
+
+Sqoop import --connect jdbc:mysql://localhost/training --username trainging --password 
+--table transcations
+--hive-import
+--hive-table transactions_staging -m 1
+
+          Partioning and bucketing
+Partitioning and bucketing in hive will let you do faster querying.
+For dynamic partitioning, load the data in to staging table which is already done.
+Now create a production table, and insert data.
+
+Now set the properties for the HIVE Partioning and bucketing
+   set hive.enforce.bucketing= true;
+   set hive.exec.dynamic.partition= true;
+   set hive.exec.dynamic.partition.mode= nonstrict;
+
+Create production table and load data
+create table transactions_production
+(id string,
+dept string,
+category string,
+company string,
+date1 string,
+productsize int,
+productmeasure string,
+purchasequantity int,
+purchaseamount double)
+partitioned by (chain string) clustered by (id) into 5 buckets row format delimited fields terminated by ','
+stored as textfile;
+
+After creating table overwrite the data into table transactions_production:-
+insert overwrite table transactions_production partition (chain)
+select id,dept,category,company,brand,date1,productsize,productmeasure,purchasequantity,purchaseamount,chain
+from transactions_staging;
+
+
+   Now select Top 10 customers:-
+select id,sum(purchaseamount) as custSpendings from  transactions_production group by id sort by custspending desc limit 10;
+
+   Chain wise sales:-
+select chain,sum(purchaseamount),sum(purchasequantity) from transactions_production group by chain;
+ 
+   Top 10 brands:-
+select brand,sum(purchaseamount) as custspendings from transcations_production group by brand sort by custspending desc limit 10;
+ 
+  Top 10 companies:-
+select company,sum(purchaseamount) as custspendings from transactions_production group by company sort by custspendings desc limit 10;
+  
+  Chain Year Monthly Sales:-
+ select chain,split(date1,'/')[2] as year1,split(date1,'/')[0] as month1,sum(purchaseamount) as totalsales from transactions_production
+ group by chain,split(date1,'/')[0],split(date1,'/')[2];
+  
+
+
+
