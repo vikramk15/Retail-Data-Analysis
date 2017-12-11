@@ -1,0 +1,6 @@
+Sqoop(Data into HDFS)
+
+sqoop import --connect jdbc:mysql://localhost/training --username training -password --table transactions -m 1 
+--target-dir transactionsData
+
+with the help of sqoop .Data has been loaded into HDFS For further process.
