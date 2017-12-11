@@ -1,0 +1,15 @@
+                   Top 10 companies
+
+companyGroup = GROUP transactions BY company;
+companyPurchase = FOREACH companyGroup GENERATE group, SUM(transactions.purchaseamount) as purchase;
+companyPurchaseSort = ORDER companyPurchase BY purchase desc;
+top10Companies = LIMIT companyPurchaseSort 10;
+STORE top10Companies INTO 'top10Companies';
+
+                 Chain Year Monthly Sales
+ chainYearMonSales = FOREACH transactions GENERATE chain,STRSPLIT(date,'/',3),purchaseamount as sales;  
+ chainYearMonSales = FOREACH chainYearMonSales GENERATE chain, $1.$0 as month, $1.$2 as year, sales;
+ chainYearMonSalesGroup = GROUP chainYearMonSales by (chain,year,month);
+ chainYearMonGroupSales = FOREACH chainYearMonSalesGroup GENERATE group, SUM(chainYearMonSales.sales) as totalsales;
+ chainYearMonGroupSales = FOREACH chainYearMonGroupSales GENERATE group.chain as chain, group.year as year, group.month as month, totalsales;
+ STORE chainYearMonGroupSales INTO 'chainYearMonGroupSales';
